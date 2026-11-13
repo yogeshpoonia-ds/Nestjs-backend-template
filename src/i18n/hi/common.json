@@ -1,0 +1,8 @@
+{
+  "SUCCESS": "सफल",
+  "ERROR": "एक त्रुटि हुई",
+  "NOT_FOUND": "संसाधन नहीं मिला",
+  "UNAUTHORIZED": "अनधिकृत",
+  "FORBIDDEN": "निषिद्ध",
+  "INTERNAL_SERVER_ERROR": "आंतरिक सर्वर त्रुटि"
+}

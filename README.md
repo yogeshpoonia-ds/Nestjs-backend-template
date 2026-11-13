@@ -44,6 +44,63 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Internationalization (i18n)
+
+Translations live in `src/i18n/{lang}/*.json` and are loaded once through `I18nModule` in `AppModule`. Admin, web, and mobile surfaces share that module. Language resolution order is:
+
+1. `Accept-Language` header
+2. `DEFAULT_LANGUAGE` from the environment
+3. English (`en`) when `DEFAULT_LANGUAGE` is unset
+
+Supported codes come from `SUPPORTED_LANGUAGES`. Unsupported `Accept-Language` values fall back to `DEFAULT_LANGUAGE`. Startup fails if `DEFAULT_LANGUAGE` is missing from `SUPPORTED_LANGUAGES`.
+
+### Add a language
+
+1. Create `src/i18n/<code>/` with the same JSON files as `en/` (`common`, `auth`, `users`, `validation`).
+2. Append the code to `SUPPORTED_LANGUAGES` in `.env`.
+3. Restart the app so the loader picks up the new folder.
+
+### Add translations for a feature
+
+Add or extend a JSON file under each language folder, for example `src/i18n/en/orders.json` and `src/i18n/hi/orders.json`. Keys are referenced as `file.KEY`, such as `orders.CREATED`.
+
+### Use translations in services and controllers
+
+```typescript
+import { I18nContext, I18nService } from 'nestjs-i18n';
+
+constructor(private readonly i18n: I18nService) {}
+
+const message = await this.i18n.translate('auth.LOGIN_SUCCESS', {
+  lang: I18nContext.current()?.lang ?? 'en',
+});
+```
+
+Interpolation uses named arguments from the JSON template, for example `{property}` and `{constraints.0}`.
+
+### Translate validation errors
+
+Use `i18nValidationMessage` on class-validator decorators. The global `I18nValidationPipe` and `I18nValidationExceptionFilter` return Nest's usual error body with a localized `message`.
+
+```typescript
+import { IsEmail } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
+
+export class LoginDto {
+  @IsEmail({}, { message: i18nValidationMessage('validation.INVALID_EMAIL') })
+  email!: string;
+}
+```
+
+### Configure the default language
+
+```env
+DEFAULT_LANGUAGE=en
+SUPPORTED_LANGUAGES=en,hi
+```
+
+Set `DEFAULT_LANGUAGE=hi` to prefer Hindi when the client omits `Accept-Language`.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

@@ -40,6 +40,24 @@ export class QueueService implements OnModuleDestroy {
     return this.queue(name).add(jobName, data, options);
   }
 
+  async ping(): Promise<void> {
+    const queue = new Queue('health', { connection: this.connection });
+
+    try {
+      await Promise.race([
+        queue.waitUntilReady(),
+        new Promise<never>((_, reject) => {
+          setTimeout(
+            () => reject(new Error('Queue connection timed out')),
+            2000,
+          );
+        }),
+      ]);
+    } finally {
+      await queue.close().catch(() => undefined);
+    }
+  }
+
   async onModuleDestroy(): Promise<void> {
     await Promise.all(
       [...this.queues.values()].map((queue) => queue.close()),

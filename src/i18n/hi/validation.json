@@ -1,0 +1,6 @@
+{
+  "REQUIRED": "{property} आवश्यक है",
+  "INVALID_EMAIL": "ईमेल आवश्यक है",
+  "MIN_LENGTH": "{property} कम से कम {constraints.0} अक्षर का होना चाहिए",
+  "MAX_LENGTH": "{property} अधिकतम {constraints.0} अक्षर का हो सकता है"
+}
