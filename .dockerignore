@@ -1,0 +1,8 @@
+node_modules
+dist
+*.log
+*.md
+.git
+.env
+deploy/staging/.env
+deploy/production/.env
