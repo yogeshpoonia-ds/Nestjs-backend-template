@@ -1,0 +1,18 @@
+model User {
+  id                String    @id @default(uuid()) @db.Uuid
+  email             String    @unique
+  passwordHash      String
+  name              String
+  isActive          Boolean   @default(true)
+  authzVersion      Int       @default(0)
+  passwordChangedAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  roles               UserRole[]
+  permissions         UserPermission[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  assignedRoles       UserRole[]       @relation("RoleAssignedBy")
+  assignedPermissions UserPermission[] @relation("PermissionAssignedBy")
+}

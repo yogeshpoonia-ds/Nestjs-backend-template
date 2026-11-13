@@ -1,0 +1,47 @@
+model Role {
+  id                     String   @id @default(uuid()) @db.Uuid
+  name                   String   @unique
+  displayName            String
+  description            String
+  isSystem               Boolean  @default(false)
+  isActive               Boolean  @default(true)
+  grantsAllPermissions   Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       UserRole[]
+}
+
+model RolePermission {
+  id           String @id @default(uuid()) @db.Uuid
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model UserRole {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  roleId       String    @db.Uuid
+  assignedAt   DateTime  @default(now())
+  assignedById String?   @db.Uuid
+  expiresAt    DateTime?
+
+  user       User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedBy User? @relation("RoleAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
+}
+
+model RbacState {
+  id      Int @id @default(1)
+  version Int @default(0)
+}

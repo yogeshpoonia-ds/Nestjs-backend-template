@@ -29,7 +29,67 @@
 
 ```bash
 $ npm install
+$ cp .env.example .env
 ```
+
+Fill in `DATABASE_URL`, `REDIS_URL`, and the JWT secrets in `.env`. Generate secrets with:
+
+```bash
+openssl rand -base64 48
+```
+
+## Database, RBAC seed, and Super Admin bootstrap
+
+Run these as explicit deployment steps. Seeding and bootstrap are **not** performed on application startup.
+
+```bash
+# 1. Apply migrations
+npm run db:migrate:deploy
+
+# 2. Synchronize system permissions, dependencies, and roles (idempotent)
+npm run db:seed
+
+# 3. Create the initial Super Admin (idempotent; never resets an existing password)
+# Set these only for this command, then remove them from the shell/environment.
+export SUPER_ADMIN_EMAIL='admin@example.com'
+export SUPER_ADMIN_PASSWORD='choose-a-long-unique-password'
+export SUPER_ADMIN_NAME='System Administrator'
+npm run bootstrap:super-admin
+unset SUPER_ADMIN_EMAIL SUPER_ADMIN_PASSWORD SUPER_ADMIN_NAME
+```
+
+Development migration helper:
+
+```bash
+npm run db:migrate:dev
+```
+
+Regenerate the Prisma client:
+
+```bash
+npm run db:generate
+```
+
+## Authentication and RBAC
+
+- Surfaces: `/admin/v1`, `/web/v1`, `/mobile/v1`
+- JWT access tokens (short-lived) + opaque rotated refresh tokens stored hashed in PostgreSQL
+- Admin/web refresh cookies use HttpOnly + CSRF double-submit; mobile returns the refresh token in JSON for secure storage
+- Hybrid RBAC: system permissions/roles in source (`src/features/rbac/definitions`), custom roles in the database, direct user ALLOW/DENY overrides, permission dependencies, Redis-cached effective permissions
+- Authorization example:
+
+```typescript
+import { PERMISSIONS } from '../rbac/definitions/index.js';
+import { RequirePermissions } from '../rbac/decorators/require-permissions.decorator.js';
+
+@RequirePermissions(PERMISSIONS.USERS.READ)
+@Get()
+findAll() {
+  return this.usersService.list(1, 20);
+}
+```
+
+Swagger (non-production): `/admin/docs`, `/web/docs`, `/mobile/docs`
 
 ## Compile and run the project
 
@@ -42,6 +102,14 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+```
+
+## Tests and checks
+
+```bash
+npm run typecheck
+npm run lint
+npm test
 ```
 
 ## Internationalization (i18n)

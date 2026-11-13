@@ -13,6 +13,10 @@ export class CacheService {
     return this.redis.set(key, value, ttlSeconds);
   }
 
+  del(key: string): Promise<void> {
+    return this.redis.del(key);
+  }
+
   async ping(): Promise<boolean> {
     return (await this.redis.ping()) === 'PONG';
   }

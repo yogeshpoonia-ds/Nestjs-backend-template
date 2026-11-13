@@ -1,0 +1,40 @@
+enum AuthSurface {
+  ADMIN
+  WEB
+  MOBILE
+}
+
+model Session {
+  id               String      @id @default(uuid()) @db.Uuid
+  userId           String      @db.Uuid
+  surface          AuthSurface
+  refreshTokenHash String
+  tokenVersion     Int         @default(0)
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  revokedReason    String?
+  userAgent        String?
+  ipAddress        String?
+  deviceName       String?
+  lastActivityAt   DateTime    @default(now())
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, surface])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

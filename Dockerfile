@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Generate the Prisma client, then build the NestJS application
-RUN npx prisma generate && npm run build
+RUN npm run db:generate && npm run build
 
 # Expose the application port
 EXPOSE 3000

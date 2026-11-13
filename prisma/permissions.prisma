@@ -1,0 +1,52 @@
+enum PermissionEffect {
+  ALLOW
+  DENY
+}
+
+model Permission {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @unique
+  resource     String
+  action       String
+  description  String
+  isSystem     Boolean   @default(true)
+  deprecatedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  roles         RolePermission[]
+  users         UserPermission[]
+  dependencies  PermissionDependency[] @relation("PermissionDepends")
+  dependents    PermissionDependency[] @relation("PermissionRequiredBy")
+
+  @@index([resource])
+}
+
+model PermissionDependency {
+  permissionId         String @db.Uuid
+  dependsOnPermissionId String @db.Uuid
+
+  permission Permission @relation("PermissionDepends", fields: [permissionId], references: [id], onDelete: Cascade)
+  dependsOn  Permission @relation("PermissionRequiredBy", fields: [dependsOnPermissionId], references: [id], onDelete: Cascade)
+
+  @@id([permissionId, dependsOnPermissionId])
+  @@index([dependsOnPermissionId])
+}
+
+model UserPermission {
+  id           String           @id @default(uuid()) @db.Uuid
+  userId       String           @db.Uuid
+  permissionId String           @db.Uuid
+  effect       PermissionEffect
+  assignedAt   DateTime         @default(now())
+  assignedById String?          @db.Uuid
+  expiresAt    DateTime?
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  assignedBy User?      @relation("PermissionAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId, permissionId])
+  @@index([userId])
+  @@index([permissionId])
+}

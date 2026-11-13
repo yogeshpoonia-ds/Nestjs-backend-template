@@ -1,0 +1,5 @@
+{
+  "FORBIDDEN": "Insufficient permissions",
+  "ROLE_NOT_FOUND": "Role not found",
+  "PERMISSION_NOT_FOUND": "Permission not found"
+}
